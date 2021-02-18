@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: codeinnovate
+spec:
+  containers:
+    - name: codeinnovate
+      image: iad.ocir.io/airbnb/code-innovate/codeinnovate:latest
+      imagePullPolicy: Always
+      env:
+        - name: mysql_host
+          value: mysql
+        - name: mysql_username
+          value: root
+        - name: mysql_password
+          value: aeB9Ooli2aaphahm5bi3ienei6xoo4go
+      resources:
+        limits:
+          memory: 4096Mi
+          cpu: 1
+        requests:
+          memory: 2048Mi
+          cpu: 1
+      ports:
+      - name: codeinnovate
+        containerPort: 8081
+        protocol: TCP
+  imagePullSecrets:
+    - name: ocirsecrets
+sriram_man@cloudshell:~ (us-ashburn-1)$ cat app_deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeinnovate
+  labels:
+    app: codeinnovate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codeinnovate
+  template:
+    metadata:
+      labels:
+        app: codeinnovate
+    spec:
+      containers:
+      - name: codeinnovate
+        image: iad.ocir.io/airbnb/code-innovate/codeinnovate:latest
+        imagePullPolicy: Always
+        env:
+        - name: MYSQL_HOST
+          value: mysql
+        - name: MYSQL_PORT
+          value: "3306"
+        - name: MYSQL_PASSWORD
+          value: aeB9Ooli2aaphahm5bi3ienei6xoo4go
+        - name: JAVA_OPTS
+          value: -Xms512m -Xmx1024m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom
+        ports:
+        - name: http
+          containerPort: 8081
+        resources:
+          limits:
+            cpu: 800m
+            memory: 2048Mi
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+      imagePullSecrets:
+      - name: ocirsecrets
